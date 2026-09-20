@@ -1,21 +1,19 @@
-import { test } from "@Playwright/test";
+import {test, expect} from "@Playwright/test"
 
-test("Create_Lead", async ({ page }) => {
+test("Assertio-Assignment", async({page})=>{
+    await page.goto(" https://leafground.com/input.xhtml.");
+    const Disable =  await page.locator('input[placeholder="Disabled"]');
+    expect(Disable).toBeDisabled();
+
+    const Enable = await page.locator('//input[@id="j_idt88:name"]');
+    expect(Enable).toBeEnabled();
+    await Enable.fill("Gaurav Bhardwaj");
+
+    await expect.soft(Disable).toBeDisabled();
     
-    await page.goto("http://leaftaps.com/opentaps/control/main");
-    await page.locator("#username").fill("democsr");
-await page.locator("#password").fill("crmsfa");
-await page.locator("//input[@value='Login']").click();
-    await page.getByRole("link", { name: "CRM/SFA" }).click();
-    await page.getByRole("link", { name: "Create Lead" }).click();
-    await page.locator("#createLeadForm_companyName").fill("Qualitest");
-    await page.locator("#createLeadForm_firstName").fill("Gaurav");
-    await page.locator("#createLeadForm_lastName").fill("Bhardwaj");
-    await page.locator("#createLeadForm_personalTitle").fill("Mr");
-    await page.locator("#createLeadForm_generalProfTitle").fill("Bhardwaj");
-    await page.locator("#createLeadForm_annualRevenue").fill("123456789");
-    await page.locator("#createLeadForm_departmentName").fill("Delivery");
-    await page.locator("#createLeadForm_primaryPhoneNumber").fill("7677035116");
-    await page.locator("#createLeadForm_dataSourceId").selectOption("LEAD_WEBSITE");
-    await page.locator("input[value='Create Lead']").click();
+  const clearTextBox= page.locator('//input[@id="j_idt88:j_idt95"]');
+
+   await clearTextBox.fill("");
+   await clearTextBox.fill("Playwright Learning",{timeout: 3000});
+
 });
