@@ -1,0 +1,58 @@
+import { expect, test } from '@Playwright/test';
+
+test.setTimeout(120_000);
+
+test('Search product, apply filters, add to cart in Decathlon', async ({ page }) => {
+  await page.goto('https://www.decathlon.in/', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('link', { name: 'Decathlon Home' })).toBeVisible();
+
+  const searchBox = page.getByRole('searchbox');
+  await expect(searchBox).toBeEnabled();
+  await searchBox.fill('shoes');
+  await searchBox.press('Enter');
+
+  await page.goto('https://www.decathlon.in/search?query=shoes', {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page).toHaveTitle('Search | shoes');
+  console.log('Page title:', await page.title());
+
+  await page.getByRole('button', { name: 'Sport', exact: true }).click();
+  await page.getByRole('checkbox', { name: /^Running\b/i }).check();
+
+  await page.getByRole('button', { name: 'Gender', exact: true }).click();
+  await page.getByRole('checkbox', { name: /^Men\b/i }).check();
+
+  await page.getByRole('button', { name: 'Size', exact: true }).click();
+  await page.getByRole('checkbox', { name: /10\.5/ }).check();
+
+  await page.getByRole('button', { name: 'Most relevant', exact: true }).click();
+  await page.getByRole('option', { name: /Price.*low.*high/i }).click();
+
+  const firstProduct = page.locator('main a[href^="/p/"]').first();
+  await expect(firstProduct).toBeVisible();
+  await firstProduct.click();
+
+  const sizeButton = page.getByRole('button', {
+    name: /(?:UK\s*)?10\.5(?:\s*-\s*EU\s*45)?|Select size 10\.5/i,
+  }).first();
+  await expect(sizeButton).toBeVisible();
+  await expect(sizeButton).toBeEnabled();
+  await sizeButton.click();
+
+  const addToCartButton = page.getByRole('button', { name: /Add to cart/i });
+  await expect(addToCartButton).toBeEnabled();
+  await addToCartButton.click();
+
+  const dialog = page.getByRole('dialog');
+  if ((await dialog.count()) > 0 && (await dialog.isVisible())) {
+    await dialog.getByRole('button', { name: 'Close' }).click();
+  }
+
+  await page.getByRole('link', { name: 'Cart', exact: true }).click();
+  await expect(page).toHaveURL(/\/checkout\/cart/);
+
+  const cartTotal = page.locator('p:has-text("Total"):visible').last().locator('..').locator('..');
+  await expect(cartTotal).toBeVisible();
+  console.log('Total Cart Amount:', await cartTotal.innerText());
+});
